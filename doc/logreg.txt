@@ -246,7 +246,7 @@ within the DeepLearningTutorials folder:
 
     python code/logistic_sgd.py
 
-The output one should expect is of the form :
+The output one should expect is of the form:
 
 .. code-block:: bash
 
@@ -263,6 +263,19 @@ On an Intel(R) Core(TM)2 Duo CPU E8400 @ 3.00 Ghz  the code runs with
 approximately 1.936 epochs/sec and it took 75 epochs to reach a test
 error of 7.489%. On the GPU the code does almost 10.0 epochs/sec. For this
 instance we used a batch size of 600.
+
+
+Prediction Using a Trained Model
+++++++++++++++++++++++++++++++++
+
+``sgd_optimization_mnist`` serialize and pickle the model each time new
+lowest validation error is reached. We can reload this model and predict
+labels of new data. ``predict`` function shows an example of how
+this could be done.
+
+.. literalinclude:: ../code/logistic_sgd.py
+    :pyobject: predict
+
 
 .. rubric:: Footnotes
 

@@ -25,7 +25,15 @@ recurrent neural network on the Large Movie Review Dataset dataset.
 While the dataset is public, in this tutorial we provide a copy of the dataset
 that has previously been preprocessed according to the needs of this LSTM
 implementation. Running the code provided in this tutorial will automatically
-download the data to the local directory.
+download the data to the local directory. In order to use your own data, please
+use a (`preprocessing script
+<https://raw.githubusercontent.com/kyunghyuncho/DeepLearningTutorials/master/code/imdb_preprocess.py>`_)
+provided as a part of this tutorial.
+
+Once the model is trained, you can test it with your own corpus using the
+word-index dictionary 
+(`imdb.dict.pkl.gz <http://www.iro.umontreal.ca/~lisa/deep/data/imdb.dict.pkl.gz>`_)
+provided as a part of this tutorial.
 
 Model
 +++++
@@ -67,10 +75,10 @@ previous state, as needed.
 .. figure:: images/lstm_memorycell.png
     :align: center
 
-    **Figure 1** : Illustration of an LSTM memory cell.
+    **Figure 1**: Illustration of an LSTM memory cell.
 
 The equations below describe how a layer of memory cells is updated at every
-timestep :math:`t`. In these equations :
+timestep :math:`t`. In these equations:
 
 *       :math:`x_t` is the input to the memory cell layer at time :math:`t`
 *       :math:`W_i`, :math:`W_f`, :math:`W_c`, :math:`W_o`, :math:`U_i`,
@@ -81,7 +89,7 @@ timestep :math:`t`. In these equations :
 
 First, we compute the values for :math:`i_t`, the input gate, and
 :math:`\widetilde{C_t}` the candidate value for the states of the memory
-cells at time :math:`t` :
+cells at time :math:`t`:
 
 .. math::
     :label: 1
@@ -94,7 +102,7 @@ cells at time :math:`t` :
     \widetilde{C_t} = tanh(W_c x_t + U_c h_{t-1} + b_c)
 
 Second, we compute the value for :math:`f_t`, the activation of the memory
-cells' forget gates at time :math:`t` :
+cells' forget gates at time :math:`t`:
 
 .. math::
     :label: 3
@@ -103,7 +111,7 @@ cells' forget gates at time :math:`t` :
 
 Given the value of the input gate activation :math:`i_t`, the forget gate
 activation :math:`f_t` and the candidate state value :math:`\widetilde{C_t}`,
-we can compute :math:`C_t` the memory cells' new state at time :math:`t` :
+we can compute :math:`C_t` the memory cells' new state at time :math:`t`:
 
 .. math::
     :label: 4
@@ -111,12 +119,12 @@ we can compute :math:`C_t` the memory cells' new state at time :math:`t` :
     C_t = i_t * \widetilde{C_t} + f_t * C_{t-1}
 
 With the new state of the memory cells, we can compute the value of their
-output gates and, subsequently, their outputs :
+output gates and, subsequently, their outputs:
 
 .. math::
     :label: 5
 
-    o_t = \sigma(W_o x_t + U_o h_{t-1} + V_o C_t + b_1)
+    o_t = \sigma(W_o x_t + U_o h_{t-1} + V_o C_t + b_o)
 
 .. math::
     :label: 6
@@ -131,12 +139,12 @@ In this variant, the activation of a cell’s output gate does not depend on the
 memory cell’s state :math:`C_t`. This allows us to perform part of the
 computation more efficiently (see the implementation note, below, for
 details). This means that, in the variant we have implemented, there is no
-matrix :math:`V_o` and equation :eq:`5` is replaced by equation :eq:`5-alt` :
+matrix :math:`V_o` and equation :eq:`5` is replaced by equation :eq:`5-alt`:
 
 .. math::
     :label: 5-alt
 
-    o_t = \sigma(W_o x_t + U_o h_{t-1} + b_1)
+    o_t = \sigma(W_o x_t + U_o h_{t-1} + b_o)
 
 Our model is composed of a single LSTM layer followed by an average pooling
 and a logistic regression layer as illustrated in Figure 2 below. Thus, from
@@ -162,11 +170,11 @@ concatenating the four matrices :math:`W_*` into a single weight matrix
 :math:`W` and performing the same concatenation on the weight matrices
 :math:`U_*` to produce the matrix :math:`U` and the bias vectors :math:`b_*`
 to produce the vector :math:`b`. Then, the pre-nonlinearity activations can
-be computed with :
+be computed with:
 
 .. math::
 
-    z = \sigma(W x_t + U h_{t-1} + b)
+    z = W x_t + U h_{t-1} + b
 
 The result is then sliced to obtain the pre-nonlinearity activations for
 :math:`i`, :math:`f`, :math:`\widetilde{C_t}`, and :math:`o` and the
@@ -179,11 +187,11 @@ Code - Citations - Contact
 Code
 ====
 
-The LSTM implementation can be found in the two following files :
+The LSTM implementation can be found in the two following files:
 
-* `lstm.py <http://deeplearning.net/tutorial/code/lstm.py>`_ : Main script. Defines and train the model.
+* `lstm.py <http://deeplearning.net/tutorial/code/lstm.py>`_: Main script. Defines and train the model.
 
-* `imdb.py <http://deeplearning.net/tutorial/code/imdb.py>`_ : Secondary script. Handles the loading and preprocessing of the IMDB dataset.
+* `imdb.py <http://deeplearning.net/tutorial/code/imdb.py>`_: Secondary script. Handles the loading and preprocessing of the IMDB dataset.
 
 After downloading both scripts and putting both in the same folder, the user
 can run the code by calling:
@@ -194,7 +202,7 @@ can run the code by calling:
 
 The script will automatically download the data and decompress it.
 
-**Note** : The provided code supports the Stochastic Gradient Descent (SGD),
+**Note**: The provided code supports the Stochastic Gradient Descent (SGD),
 AdaDelta and RMSProp optimization methods. You are advised to use AdaDelta or
 RMSProp because SGD appears to performs poorly on this task with this
 particular model.
@@ -206,29 +214,30 @@ If you use this tutorial, please cite the following papers.
 
 Introduction of the LSTM model:
 
-* `[pdf] <http://deeplearning.cs.cmu.edu/pdfs/Hochreiter97_lstm.pdf>`_ Hochreiter, S., & Schmidhuber, J. (1997). Long short-term memory. Neural computation, 9(8), 1735-1780.
+* `[pdf] <http://deeplearning.cs.cmu.edu/pdfs/Hochreiter97_lstm.pdf>`__ Hochreiter, S., & Schmidhuber, J. (1997). Long short-term memory. Neural computation, 9(8), 1735-1780.
 
 Addition of the forget gate to the LSTM model:
 
-* `[pdf] <http://www.mitpressjournals.org/doi/pdf/10.1162/089976600300015015>`_ Gers, F. A., Schmidhuber, J., & Cummins, F. (2000). Learning to forget: Continual prediction with LSTM. Neural computation, 12(10), 2451-2471.
+* `[pdf] <http://www.mitpressjournals.org/doi/pdf/10.1162/089976600300015015>`__ Gers, F. A., Schmidhuber, J., & Cummins, F. (2000). Learning to forget: Continual prediction with LSTM. Neural computation, 12(10), 2451-2471.
 
 More recent LSTM paper:
 
-* `[pdf] <http://www.cs.toronto.edu/~graves/preprint.pdf>`_ Graves, Alex. Supervised sequence labelling with recurrent neural networks. Vol. 385. Springer, 2012.
+* `[pdf] <http://www.cs.toronto.edu/~graves/preprint.pdf>`__ Graves, Alex. Supervised sequence labelling with recurrent neural networks. Vol. 385. Springer, 2012.
 
 Papers related to Theano:
 
-* `[pdf] <http://www.iro.umontreal.ca/~lisa/pointeurs/nips2012_deep_workshop_theano_final.pdf>`_ Bastien, Frédéric, Lamblin, Pascal, Pascanu, Razvan, Bergstra, James, Goodfellow, Ian, Bergeron, Arnaud, Bouchard, Nicolas, and Bengio, Yoshua. Theano: new features and speed improvements. NIPS Workshop on Deep Learning and Unsupervised Feature Learning, 2012.
+* `[pdf] <http://www.iro.umontreal.ca/~lisa/pointeurs/nips2012_deep_workshop_theano_final.pdf>`__ Bastien, Frédéric, Lamblin, Pascal, Pascanu, Razvan, Bergstra, James, Goodfellow, Ian, Bergeron, Arnaud, Bouchard, Nicolas, and Bengio, Yoshua. Theano: new features and speed improvements. NIPS Workshop on Deep Learning and Unsupervised Feature Learning, 2012.
 
-* `[pdf] <http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf>`_ Bergstra, James, Breuleux, Olivier, Bastien, Frédéric, Lamblin, Pascal, Pascanu, Razvan, Desjardins, Guillaume, Turian, Joseph, Warde-Farley, David, and Bengio, Yoshua. Theano: a CPU and GPU math expression compiler. In Proceedings of the Python for Scientific Computing Conference (SciPy), June 2010.
+* `[pdf] <http://www.iro.umontreal.ca/~lisa/pointeurs/theano_scipy2010.pdf>`__ Bergstra, James, Breuleux, Olivier, Bastien, Frédéric, Lamblin, Pascal, Pascanu, Razvan, Desjardins, Guillaume, Turian, Joseph, Warde-Farley, David, and Bengio, Yoshua. Theano: a CPU and GPU math expression compiler. In Proceedings of the Python for Scientific Computing Conference (SciPy), June 2010.
 
 Thank you!
 
 Contact
 =======
 
-Please email `Kyunghyun Cho <http://www.kyunghyuncho.me/>`_ for any
-problem report or feedback. We will be glad to hear from you.
+Please email `Pierre Luc Carrier <mailto:carriepl..at..iro.umontreal.ca>`_ or
+`Kyunghyun Cho <http://www.kyunghyuncho.me/>`_ for any problem report or
+feedback. We will be glad to hear from you.
 
 References
 ++++++++++
